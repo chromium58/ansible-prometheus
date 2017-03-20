@@ -200,6 +200,30 @@ Additional command-line arguments, if any (use `alertmanager --help` to see the 
 prometheus_alertmanager_opts
 ```
 
+### Optional variables: Blackbox
+
+
+User-configurable defaults:
+
+```yaml
+# which version?
+prometheus_blackbox_exporter_version:  0.4.0
+```
+
+User-installable blackbox conf file (see [doc](https://github.com/prometheus/blackbox_exporter) for details):
+
+```yaml
+# main conf template relative to `playbook_dir`;
+# to be installed to "{{ prometheus_config_path }}/blackbox.yml"
+prometheus_blackbox_conf
+```
+
+Additional command-line arguments, if any (use `blackbox_exporter --help` to see the full list of arguments):
+
+```yaml
+prometheus_blackbox_opts
+```
+
 
 ### Optional: building from source tree
 
