@@ -25,6 +25,14 @@
 - name: stop node_exporter
   service: name=node_exporter state=stopped
 
+- name: restart blackbox_exporter
+  service: name=blackbox_exporter state=restarted
+
+- name: reload blackbox_exporter
+  service: name=blackbox_exporter state=reloaded
+
+- name: stop blackbox_exporter
+  service: name=blackbox_exporter state=stopped
 
 
 - name: restart alertmanager

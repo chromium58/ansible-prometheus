@@ -56,6 +56,11 @@
   include: install-node-exporter.yml
   when: '"node_exporter" in prometheus_components'
 
+- name: install blackbox-exporter.yml
+  include: install-blackbox-exporter.yml
+  when: '"blackbox_exporter" in prometheus_components'
+  tags: blackbox
+
 - name: install alertmanager
   include: install-alertmanager.yml
   when: '"alertmanager" in prometheus_components'
