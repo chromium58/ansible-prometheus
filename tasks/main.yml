@@ -64,3 +64,13 @@
 - name: install alertmanager
   include: install-alertmanager.yml
   when: '"alertmanager" in prometheus_components'
+
+
+- name: install redis-exporter
+  include: install-redis-exporter.yml
+  when: '"redis_exporter" in prometheus_components'
+
+
+- name: install postgres-exporter
+  include: install-postgres-exporter.yml
+  when: '"postgres_exporter" in prometheus_components'

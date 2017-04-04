@@ -1,0 +1,61 @@
+---
+# file: tasks/install-postgres-exporter.yml
+#
+# Install Prometheus postgres-exporter.
+#
+# @see http://prometheus.io/docs/introduction/getting_started/
+#
+
+- block:
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_postgres_exporter_subdir: "{{ prometheus_install_path }}"
+
+    - name: set download url
+      set_fact:
+        prometheus_postgres_exporter_url: "https://github.com/wrouesnel/postgres_exporter/releases/download/v{{ prometheus_postgres_exporter_version }}/postgres_exporter"
+
+    - name: set daemon dir
+      set_fact:
+        prometheus_postgres_exporter_daemon_dir: "{{ prometheus_postgres_exporter_subdir }}"
+
+    - name: download postgres_exporter and put to maindir
+      get_url:
+        url: "{{ prometheus_postgres_exporter_url }}"
+        dest: "{{ prometheus_install_path }}"
+
+  when: prometheus_postgres_exporter_version != "git"
+
+
+- name: set permissions, owner and group
+  file: path={{ prometheus_postgres_exporter_daemon_dir }}/postgres_exporter owner={{ prometheus_user }} group={{ prometheus_group }} mode="go-w"
+
+- name: mkdir for data
+  file:
+    path: "{{ prometheus_db_path }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: set postgres_exporter variables
+  copy: src="../files/etc-default-postgres_exporter"  dest=/etc/default/postgres_exporter
+  register: postgres_exporter_config
+
+- debug: var=postgres_exporter_config
+  notify: reload postgres_exporter
+  when: postgres_exporter_config.changed
+
+
+- name: copy INIT script to server
+  template: src="../templates/postgres_exporter.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/postgres_exporter"  mode="a+x"
+  when: not prometheus_postgres_exporter_use_systemd|bool
+
+- name: copy systemd config to server
+  template: src="../templates/postgres_exporter.service.j2"  dest="/lib/systemd/system/postgres_exporter.service"
+  when: prometheus_postgres_exporter_use_systemd|bool
+
+
+- name: set INIT status and start
+  service: name=postgres_exporter enabled=yes state=started

@@ -16,7 +16,9 @@ prometheus_group:  prometheus
 prometheus_version:                 1.5.0
 prometheus_node_exporter_version:   0.13.0
 prometheus_blackbox_exporter_version:   0.4.0
+prometheus_redis_exporter_version:   0.10.8
 prometheus_alertmanager_version:    0.5.1
+prometheus_postgres_exporter_version:   0.1.2
 
 gosu_version: "1.10"
 prometheus_go_version:   1.6.2
@@ -44,6 +46,7 @@ prometheus_clean_tarball:     true
 # rebuild each time?  (only applied to `git` version)
 prometheus_rebuild:           false
 
+prometheus_postgres_datasource_variable: "user=postgres host=/var/run/postgresql/ sslmode=disable"
 
 #
 # derived variables; internal use only.
