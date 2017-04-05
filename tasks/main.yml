@@ -74,3 +74,7 @@
 - name: install postgres-exporter
   include: install-postgres-exporter.yml
   when: '"postgres_exporter" in prometheus_components'
+
+- name: install mysqld-exporter
+  include: install-mysqld-exporter.yml
+  when: '"mysqld_exporter" in prometheus_components'

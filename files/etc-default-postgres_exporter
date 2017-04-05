@@ -1,1 +1,2 @@
 START=yes
+DATA_SOURCE_NAME='{{ prometheus_postgres_datasource_variable }}'

@@ -6,8 +6,12 @@
 # @see http://prometheus.io/docs/introduction/getting_started/
 #
 
-- block:
+- name: Check if alertmanager_exporter already installed...
+  stat:
+    path: '{{ prometheus_install_path }}/alertmanager-{{ prometheus_alertmanager_version }}.{{ prometheus_platform_suffix }}/alertmanager'
+  register: alertmanager_stat
 
+- block:
 
     - name: set internal variables for convenience, part 1
       set_fact:
@@ -31,7 +35,6 @@
       when: prometheus_alertmanager_version | version_compare('0.3', '<')
 
 
-
     - name: download and uncompress alertmanager tarball
       unarchive:
         src: "{{ prometheus_alertmanager_tarball_url }}"
@@ -40,6 +43,7 @@
         owner: "{{ prometheus_user }}"
         group: "{{ prometheus_group }}"
         mode: "go-w"
+      when: alertmanager_stat.stat.exists == False
 
   when: prometheus_alertmanager_version != "git"
 

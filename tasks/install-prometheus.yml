@@ -5,6 +5,10 @@
 #
 # @see http://prometheus.io/docs/introduction/getting_started/
 #
+- name: Check if prometheus already installed...
+  stat:
+    path: '{{ prometheus_install_path }}/prometheus-{{ prometheus_version }}.{{ prometheus_platform_suffix }}/prometheus'
+  register: prometheus_stat
 
 - block:
 
@@ -38,6 +42,7 @@
         src: "{{ prometheus_tarball_url }}"
         dest: "{{ prometheus_install_path }}"
         remote_src: yes
+      when: prometheus_stat.stat.exists == False
 
   when: prometheus_version != "git"
 
@@ -133,7 +138,7 @@
   notify:
     - reload prometheus
 
-- name: copy prometheus main config file from playbook's, if any
+- name: copy prometheus main config file from playbooks, if any
   template:
     src: "{{ playbook_dir }}/{{ prometheus_conf_main }}"
     dest: "{{ prometheus_config_path }}/prometheus.yml"
@@ -141,4 +146,3 @@
   when: prometheus_conf_main is defined
   notify:
     - reload prometheus
-

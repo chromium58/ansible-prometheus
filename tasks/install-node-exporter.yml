@@ -6,6 +6,11 @@
 # @see http://prometheus.io/docs/introduction/getting_started/
 #
 
+- name: Check if node_exporter already installed...
+  stat:
+    path: '{{ prometheus_install_path }}/node_exporter-{{ prometheus_node_exporter_version }}.{{ prometheus_platform_suffix }}/node_exporter'
+  register: node_exporter_stat
+
 - block:
 
     - name: set internal variables for convenience
@@ -38,7 +43,7 @@
         src: "{{ prometheus_node_exporter_tarball_url }}"
         dest: "{{ prometheus_install_path }}"
         copy: no
-
+      when: node_exporter_stat.stat.exists == False
   when: prometheus_node_exporter_version != "git"
 
 

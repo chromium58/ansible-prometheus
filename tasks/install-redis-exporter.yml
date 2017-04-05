@@ -6,6 +6,11 @@
 # @see http://prometheus.io/docs/introduction/getting_started/
 #
 
+- name: Check if redis_exporter already installed...
+  stat:
+    path: '{{ prometheus_install_path }}/redis_exporter-{{ prometheus_redis_exporter_version }}.{{ prometheus_platform_suffix }}/redis_exporter'
+  register: redis_exporter_stat
+
 - block:
 
     - name: set internal variables for convenience
@@ -24,15 +29,20 @@
 
     - name: set daemon dir
       set_fact:
-        prometheus_redis_exporter_daemon_dir: "{{ prometheus_install_path }}"
+#        prometheus_redis_exporter_daemon_dir: "{{ prometheus_install_path }}"
+        prometheus_redis_exporter_daemon_dir: "{{ prometheus_redis_exporter_subdir }}"
+
+    - name: Ensure daemon dir exists
+      file: 
+        path: "{{ prometheus_redis_exporter_subdir }}"
+        state: directory
 
     - name: download and untar redis_exporter tarball
       unarchive:
         src: "{{ prometheus_redis_exporter_tarball_url }}"
-        dest: "{{ prometheus_install_path }}"
+        dest: "{{ prometheus_redis_exporter_subdir }}"
         copy: no
-
-  when: prometheus_redis_exporter_version != "git"
+      when: redis_exporter_stat.stat.exists == False
 
 
 - name: set permissions, owner and group
@@ -65,4 +75,4 @@
 
 
 - name: set INIT status and start
-  service: name=redis_exporter enabled=yes state=started
+  service: name=redis_exporter enabled=yes state=restarted
