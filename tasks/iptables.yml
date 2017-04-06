@@ -1,0 +1,18 @@
+---
+- name: Install iptables persistent package
+  apt:
+    pkg: "iptables-persistent"
+    update_cache: yes
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Allow Eastwood ips for scraping prometheus metrics
+  iptables_raw:
+    name: allow_eastwood_prometheus
+    rules: '-A INPUT -p tcp -m tcp -s {% for ip in prometheus_allowed_ips %}{{ ip }}{% if not loop.last %},{% endif %}{% endfor %} --dport 9090:9299 -j ACCEPT'
+    weight: 35
+
+- name: Remove public access to prometheus ports
+  iptables_raw:
+    name: close_prometheus
+    rules: '-A INPUT -p tcp -m tcp --dport 9090:9299 -j DROP'
