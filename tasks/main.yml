@@ -81,4 +81,4 @@
 
 - name: Secure metrics from worldwide access
   include: iptables.yml
-  when: prometheus_allowed_ips is defined
+  when: (prometheus_allowed_ips is defined) and (prometheus_allowed_ips != "off")
