@@ -46,3 +46,12 @@
 - name: stop alertmanager
   service: name=alertmanager state=stopped
   when: prometheus_use_service|bool
+
+- name: restart nginx_vts_exporter
+  service: name=nginx_vts_exporter state=restarted
+
+- name: reload nginx_vts_exporter
+  service: name=nginx_vts_exporter state=reloaded
+
+- name: stop nginx_vts_exporter
+  service: name=nginx_vts_exporter state=stopped
