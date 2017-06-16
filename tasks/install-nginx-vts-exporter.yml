@@ -68,3 +68,11 @@
 
 - name: set INIT status and start
   service: name=nginx_vts_exporter enabled=yes state=started
+
+- name: enable service in systemd
+  systemd:
+    name: nginx_vts_exporter
+    state: started
+    enabled: yes
+    masked: no
+  when: prometheus_nginx_vts_exporter_use_systemd|bool
