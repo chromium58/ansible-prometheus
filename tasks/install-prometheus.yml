@@ -121,7 +121,7 @@
 
 
 - name: copy rule files from playbook's, if any
-  copy:
+  template:
     src: "{{ playbook_dir }}/{{ item.value.src }}"
     dest: "{{ prometheus_rule_path }}/{{ item.value.dest }}"
 #    validate: "{{ prometheus_daemon_dir }}/promtool check-rules %s"
