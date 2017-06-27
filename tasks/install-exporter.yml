@@ -96,7 +96,7 @@
   when: sys.stdout == "init"
 
 - name: copy systemd config to server
-  template: src="../templates/exporter.service.j2"  dest="/etc/systemd/system/{{ item }}.service"
+  template: src="../templates/exporter.service.j2"  dest="/lib/systemd/system/{{ item }}.service"
   when: sys.stdout == "systemd"
 
 - name: set INIT status and start
