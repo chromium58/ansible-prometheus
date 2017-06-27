@@ -13,12 +13,6 @@
   yum: name=libselinux-python state=present
   when: ansible_pkg_mgr == "yum"
 
-- name: install dependencies for compiling Prometheus source code
-  include: install-compile-tools.yml
-  when: prometheus_alertmanager_version == "git" or prometheus_node_exporter_version == "git" or prometheus_version == "git"
-
-
-
 - name: create Prometheus group
   group: name={{ prometheus_group }}  state=present
 
@@ -50,39 +44,21 @@
 
 - name: install prometheus
   include: install-prometheus.yml
-  when: '"prometheus" in prometheus_components'
-
-- name: install node-exporter
-  include: install-node-exporter.yml
-  when: '"node_exporter" in prometheus_components'
-
-- name: install blackbox-exporter.yml
-  include: install-blackbox-exporter.yml
-  when: '"blackbox_exporter" in prometheus_components'
-  tags: blackbox
+  when: 'prometheus_components is defined and "prometheus" in prometheus_components'
 
 - name: install alertmanager
   include: install-alertmanager.yml
-  when: '"alertmanager" in prometheus_components'
+  when: 'prometheus_components is defined and "alertmanager" in prometheus_components'
+
+- name: install blackbox exporter
+  include: install-blackbox-exporter.yml
+  when: 'prometheus_components is defined and "blackbox_exporter" in prometheus_components'
 
 
-- name: install redis-exporter
-  include: install-redis-exporter.yml
-  when: '"redis_exporter" in prometheus_components'
-
-
-- name: install postgres-exporter
-  include: install-postgres-exporter.yml
-  when: '"postgres_exporter" in prometheus_components'
-
-- name: install mysqld-exporter
-  include: install-mysqld-exporter.yml
-  when: '"mysqld_exporter" in prometheus_components'
-
-- name: install nginx-vts-exporter
-  include: install-nginx-vts-exporter.yml
-  when: '"nginx_vts_exporter" in prometheus_components'
-
+- name: install whitebox exporters
+  include: install-exporter.yml
+  with_items: '{{ prometheus_exporters }}'
+  tags: exporters
 
 - name: Secure metrics from worldwide access
   include: iptables.yml

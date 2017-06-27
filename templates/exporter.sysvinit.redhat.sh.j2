@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ### BEGIN INIT INFO
-# processname:       nginx_vts_exporter
+# processname:       node_exporter
 # Short-Description: Exporter for machine metrics.
 # Description:       Prometheus exporter for machine metrics,
 #                    written in Go with pluggable metric collectors.
 #
 # chkconfig: 2345 80 80
-# pidfile: {{ prometheus_pid_path }}/nginx_vts_exporter.pid
+# pidfile: {{ prometheus_pid_path }}/node_exporter.pid
 #
 #
 ### END INIT INFO
@@ -18,21 +18,21 @@
 . /etc/init.d/functions
 
 
-NAME=nginx_vts_exporter
-DESC="Exporter for machine metrics"
-DAEMON={{ prometheus_nginx_vts_exporter_daemon_dir }}/bin/nginx-vts-exporter
+NAME={{ item }}
+DESC="{{ item }} for machine metrics"
+DAEMON={{ prometheus_exporter_binary_path }}
 USER={{ prometheus_user }}
 CONFIG=
 PID="{{ prometheus_pid_path }}/$NAME.pid"
 LOG="{{ prometheus_log_path }}/$NAME.log"
 GOSU=/usr/local/bin/gosu
 
-{% if prometheus_mysqld_datasource_variable is defined %}
-export DATA_SOURCE_NAME='{{ prometheus_mysqld_datasource_variable }}'
+{% if prometheus_exporters_dict[item]['datasource'] is defined %}
+export DATA_SOURCE_NAME="{{ prometheus_exporters_dict[item]['datasource'] }}"
 {% endif %}
 
-{% if prometheus_nginx_vts_exporter_opts is defined %}
-DAEMON_OPTS='{{ prometheus_nginx_vts_exporter_opts }}'
+{% if prometheus_exporters_dict[item]['options'] is defined %}
+DAEMON_OPTS="{{ prometheus_exporters_dict[item]['options'] }}"
 {% else %}
 DAEMON_OPTS=
 {% endif %}
@@ -92,7 +92,7 @@ stop() {
 }
 
 reload() {
-  #-- sorry but nginx_vts_exporter doesn't handle -HUP signal...
+  #-- sorry but node_exporter doesn't handle -HUP signal...
   #killproc -p $PID -b $DAEMON  $NAME -HUP
   #RETVAL=$?
   stop

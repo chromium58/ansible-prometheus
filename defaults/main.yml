@@ -14,13 +14,38 @@ prometheus_user:   prometheus
 prometheus_group:  prometheus
 
 prometheus_version:                 1.5.0
-prometheus_node_exporter_version:   0.13.0
-prometheus_blackbox_exporter_version:   0.4.0
-prometheus_redis_exporter_version:   0.10.8
 prometheus_alertmanager_version:    0.5.1
-prometheus_postgres_exporter_version:   0.1.2
-prometheus_mysqld_exporter_version:   0.9.0
-prometheus_nginx_vts_exporter_version:   0.5
+prometheus_blackbox_exporter_version:   0.4.0
+
+
+prometheus_exporters_dict:
+
+  node_exporter:
+    version: '0.13.0'
+    url: 'https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz'
+
+  redis_exporter:
+    version: '0.10.8'
+    url: 'https://github.com/oliver006/redis_exporter/releases/download/v0.10.8/redis_exporter-v0.10.8.linux-amd64.tar.gz'
+    binary_path: "{{ prometheus_install_path }}/redis_exporter-0.10.8.{{ prometheus_platform_suffix }}/redis_exporter"
+    subdir: no
+    options: "-redis.alias={{ inventory_hostname }}"
+
+  postgres_exporter:
+    version: '0.1.2'
+    binary_url: 'https://github.com/wrouesnel/postgres_exporter/releases/download/v0.1.2/postgres_exporter'
+    datasource: "user=postgres host=/var/run/postgresql/ sslmode=disable"
+
+  mysqld_exporter:
+    version: '0.9.0'
+    url: 'https://github.com/prometheus/mysqld_exporter/releases/download/v0.9.0/mysqld_exporter-0.9.0.linux-amd64.tar.gz'
+    options: '-config.my-cnf={{ prometheus_install_path }}/mysqld_exporter-0.9.0.{{ prometheus_platform_suffix }}/my.cnf'
+
+  nginx_vts_exporter:
+    version: '0.5'
+    url: 'https://github.com/hnlq715/nginx-vts-exporter/archive/v0.5.tar.gz'
+    binary_path: "{{ prometheus_install_path }}/nginx_vts_exporter-0.5.{{ prometheus_platform_suffix }}/nginx-vts-exporter-0.5/bin/nginx-vts-exporter"
+    options: "http://127.0.0.1/format/json"
 
 gosu_version: "1.10"
 prometheus_go_version:   1.6.2
@@ -47,8 +72,6 @@ prometheus_clean_tarball:     true
 
 # rebuild each time?  (only applied to `git` version)
 prometheus_rebuild:           false
-
-prometheus_postgres_datasource_variable: "user=postgres host=/var/run/postgresql/ sslmode=disable"
 
 #
 # derived variables; internal use only.

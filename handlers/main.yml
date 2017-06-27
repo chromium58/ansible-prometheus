@@ -14,7 +14,17 @@
   service: name=prometheus state=stopped
   when: prometheus_use_service|bool
 
+- name: restart alertmanager
+  service: name=alertmanager state=restarted
+  when: prometheus_use_service|bool
 
+- name: reload alertmanager
+  service: name=alertmanager state=reloaded
+  when: prometheus_use_service|bool
+
+- name: stop alertmanager
+  service: name=alertmanager state=stopped
+  when: prometheus_use_service|bool
 
 - name: restart node_exporter
   service: name=node_exporter state=restarted
@@ -34,19 +44,6 @@
 - name: stop blackbox_exporter
   service: name=blackbox_exporter state=stopped
 
-
-- name: restart alertmanager
-  service: name=alertmanager state=restarted
-  when: prometheus_use_service|bool
-
-- name: reload alertmanager
-  service: name=alertmanager state=reloaded
-  when: prometheus_use_service|bool
-
-- name: stop alertmanager
-  service: name=alertmanager state=stopped
-  when: prometheus_use_service|bool
-
 - name: restart nginx_vts_exporter
   service: name=nginx_vts_exporter state=restarted
 
@@ -55,3 +52,30 @@
 
 - name: stop nginx_vts_exporter
   service: name=nginx_vts_exporter state=stopped
+
+- name: restart redis_exporter
+  service: name=redis_exporter state=restarted
+
+- name: reload redis_exporter
+  service: name=redis_exporter state=reloaded
+
+- name: stop redis_exporter
+  service: name=redis_exporter state=stopped
+
+- name: restart postgres_exporter
+  service: name=postgres_exporter state=restarted
+
+- name: reload postgres_exporter
+  service: name=postgres_exporter state=reloaded
+
+- name: stop postgres_exporter
+  service: name=postgres_exporter state=stopped
+
+- name: restart mysqld_exporter
+  service: name=mysqld_exporter state=restarted
+
+- name: reload mysqld_exporter
+  service: name=mysqld_exporter state=reloaded
+
+- name: stop mysqld_exporter
+  service: name=mysqld_exporter state=stopped

@@ -96,8 +96,16 @@
   when: sys.stdout == "init"
 
 - name: copy systemd config to server
-  template: src="../templates/exporter.service.j2"  dest="/lib/systemd/system/{{ item }}.service"
+  template: src="../templates/exporter.service.j2"  dest="/etc/systemd/system/{{ item }}.service"
   when: sys.stdout == "systemd"
 
 - name: set INIT status and start
   service: name='{{ item }}' enabled=yes state=restarted
+
+
+- name: enable service {{ item }} and ensure it is not masked
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    masked: no
+  when: sys.stdout == "systemd"
