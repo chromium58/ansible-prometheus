@@ -21,11 +21,6 @@
   set_fact:
     prometheus_exporter_daemon_dir: "{{ prometheus_exporter_subdir }}"
 
-- name: set prometheus exporter opts
-  set_fact:
-    prometheus_exporter_opts: "{{ vars['prometheus_' + item + '_opts'] }}"
-  when: vars['prometheus_' + item + '_opts'] is defined
-
 - name: set prometheus exporter binary path
   set_fact:
     prometheus_exporter_binary_path: "{{ prometheus_exporters_dict[item]['binary_path'] if (prometheus_exporters_dict[item]['binary_path'] is defined) else prometheus_exporter_daemon_dir + '/' + item }}"
@@ -76,7 +71,7 @@
     mode: "u=rwx,g=rx,o="
 
 - name: set '{{ item }}' variables
-  copy: src="../files/etc-default-{{ item }}"  dest=/etc/default/{{ item }}
+  copy: src="../files/etc-default-exporter"  dest=/etc/default/{{ item }}
   register: '{{ item }}_config'
 
 - name: install exporter config file
