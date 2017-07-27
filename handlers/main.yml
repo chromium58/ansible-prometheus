@@ -79,3 +79,12 @@
 
 - name: stop mysqld_exporter
   service: name=mysqld_exporter state=stopped
+
+- name: restart hpraid_exporter
+  service: name=hpraid_exporter state=restarted
+
+- name: reload hpraid_exporter
+  service: name=hpraid_exporter state=reloaded
+
+- name: stop hpraid_exporter
+  service: name=hpraid_exporter state=stopped

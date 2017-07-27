@@ -24,6 +24,10 @@ prometheus_exporters_dict:
     version: '0.13.0'
     url: 'https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz'
 
+  hpraid_exporter:
+    version: '0.0.2'
+    url: 'https://github.com/chromium58/hpraid_exporter/releases/download/v0.0.1/hpraid_exporter-0.0.1.linux-amd64.tar.gz'
+
   redis_exporter:
     version: '0.10.8'
     url: 'https://github.com/oliver006/redis_exporter/releases/download/v0.10.8/redis_exporter-v0.10.8.linux-amd64.tar.gz'

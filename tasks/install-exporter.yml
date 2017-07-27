@@ -101,6 +101,7 @@
 - name: enable service {{ item }} and ensure it is not masked
   systemd:
     name: "{{ item }}"
+    daemon_reload: yes
     enabled: yes
     masked: no
   when: sys.stdout == "systemd"
