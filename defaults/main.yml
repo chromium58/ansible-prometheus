@@ -20,6 +20,10 @@ prometheus_blackbox_exporter_version:   0.4.0
 
 prometheus_exporters_dict:
 
+  process_exporter:
+    version: '0.1.0'
+    url: 'https://github.com/ncabatoff/process-exporter/releases/download/v0.1.0/process-exporter-0.1.0.linux-amd64.tar.gz'
+
   node_exporter:
     version: '0.13.0'
     url: 'https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz'

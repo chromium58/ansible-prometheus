@@ -88,3 +88,12 @@
 
 - name: stop hpraid_exporter
   service: name=hpraid_exporter state=stopped
+
+- name: restart process_exporter
+  service: name=process_exporter state=restarted
+
+- name: reload process_exporter
+  service: name=process_exporter state=reloaded
+
+- name: stop process_exporter
+  service: name=process_exporter state=stopped

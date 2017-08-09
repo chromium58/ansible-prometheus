@@ -20,7 +20,13 @@ set -e
 NAME={{ item }}
 DESC="{{ item }} for machine metrics"
 DAEMON={{ prometheus_exporter_binary_path }}
+
+{% if prometheus_exporters_dict[item]['sudo'] is not defined or prometheus_exporters_dict[item]['sudo'] != "yes" %}
 USER={{ prometheus_user }}
+{% else %}
+USER=root
+{% endif %}
+
 CONFIG=
 PID="{{ prometheus_pid_path }}/$NAME.pid"
 LOG="{{ prometheus_log_path }}/$NAME.log"

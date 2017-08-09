@@ -14,8 +14,10 @@ Environment=DATA_SOURCE_NAME="{{ prometheus_exporters_dict[item]['datasource'] }
 
 PIDFile={{ prometheus_pid_path }}/{{ item }}.pid
 
+{% if prometheus_exporters_dict[item]['sudo'] is not defined or prometheus_exporters_dict[item]['sudo'] != "yes" %}
 User={{ prometheus_user }}
 Group={{ prometheus_group }}
+{% endif %}
 
 {% if prometheus_exporters_dict[item]['options'] is defined %}
 ExecStart={{ prometheus_exporter_binary_path }} {{ prometheus_exporters_dict[item]['options'] }} 2>&1 1>{{ prometheus_log_path }}/{{ item }}.log
