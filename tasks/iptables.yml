@@ -6,7 +6,7 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Allow Eastwood ips for scraping prometheus metrics
+- name: Allow certain ips for scraping prometheus metrics
   iptables_raw:
     name: allow_eastwood_prometheus
     rules: '-A INPUT -p tcp -m tcp -s {% for ip in prometheus_allowed_ips %}{{ ip }}{% if not loop.last %},{% endif %}{% endfor %} --dport 9090:9299 -j ACCEPT'
