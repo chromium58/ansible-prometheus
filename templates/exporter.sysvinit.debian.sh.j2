@@ -66,8 +66,8 @@ service_checks () {
   fi
 
   # Prepare directories
-  mkdir -p "{{ prometheus_pid_path }}" "{{ prometheus_log_path }}"
-  chown -R $USER "{{ prometheus_pid_path }}" "{{ prometheus_log_path }}"
+  mkdir -m 0750 -p "{{ prometheus_pid_path }}" "{{ prometheus_log_path }}"
+  chown {{ prometheus_user }}:{{prometheus_user}} "{{ prometheus_pid_path }}" "{{ prometheus_log_path }}"
 
   # Check if PID exists
   if [ -f "$PID" ]; then

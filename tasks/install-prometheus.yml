@@ -42,50 +42,11 @@
         src: "{{ prometheus_tarball_url }}"
         dest: "{{ prometheus_install_path }}"
         remote_src: yes
+        owner: "{{ prometheus_user }}"
+        group: "{{ prometheus_group }}"
       when: prometheus_stat.stat.exists == False
 
   when: prometheus_version != "git"
-
-
-- block:
-
-    - name: set internal variables for convenience
-      set_fact:
-        prometheus_git_url: "https://github.com/prometheus/prometheus.git"
-        prometheus_src_path: "{{ prometheus_goroot }}/src/github.com/prometheus/prometheus"
-        prometheus_daemon_dir: "{{ prometheus_install_path }}"
-
-    - name: delete the prometheus build directory, if necessary
-      file: path="{{ prometheus_src_path }}" state=absent
-      when: prometheus_rebuild
-
-    - name: clone the prometheus project src
-      git:
-        repo: "{{ prometheus_git_url }}"
-        dest: "{{ prometheus_src_path }}"
-        force: yes
-
-    - name: build prometheus
-      command: make build
-      args:
-        chdir: "{{ prometheus_src_path }}"
-        creates: prometheus
-      environment:
-        GO15VENDOREXPERIMENT: 1
-        GOROOT: "{{ prometheus_goroot }}"
-        GOPATH: "{{ prometheus_gopath }}"
-        PATH: "{{ ansible_env.PATH }}:{{ prometheus_goroot }}/bin:{{ prometheus_gopath }}/bin"
-
-    - name: copy the built prometheus to the install path
-      command: "cp -r {{ prometheus_src_path }}/{{ item }} {{ prometheus_install_path }}"
-      with_items:
-        - prometheus
-        - promtool
-        - consoles
-        - console_libraries
-
-  when: prometheus_version == "git"
-
 
 
 - name: set permissions, owner and group
@@ -95,7 +56,6 @@
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
     mode: "go-w"
-    recurse: yes
 
 - name: mkdir for config and data
   file:

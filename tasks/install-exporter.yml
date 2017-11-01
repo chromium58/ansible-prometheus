@@ -5,10 +5,6 @@
 #
 # @see http://prometheus.io/docs/introduction/getting_started/
 #
-- name: Check if systemd or not
-  command: ps -p 1 -o comm=
-  register: sys
-
 - name: set internal variables for convenience
   set_fact:
     prometheus_exporter_subdir: "{{ prometheus_install_path }}/{{ item }}-{{ prometheus_exporters_dict[item]['version'] }}.{{ prometheus_platform_suffix }}"
@@ -34,16 +30,19 @@
 - block:
 
     - name: Ensure daemon dir exists
-      file: 
+      file:
         path: "{{ prometheus_exporter_subdir }}"
         state: directory
+        owner: "{{ prometheus_user }}"
+        group: "{{ prometheus_group }}"
 
     - name: download and untar '{{ item }}' tarball
       unarchive:
         src: "{{ prometheus_exporters_dict[item]['url'] }}"
-#        dest: '{{ prometheus_exporter_subdir }}'
         dest: "{{ prometheus_install_path if (prometheus_exporters_dict[item]['subdir'] is not defined) else prometheus_exporter_subdir }}"
         copy: no
+        owner: "{{ prometheus_user }}"
+        group: "{{ prometheus_group }}"
       when: (prometheus_exporters_dict[item]['url'] is defined) and ({{ item }}_stat.stat.exists == False)
       notify: restart {{ item }}
 
@@ -51,6 +50,8 @@
       get_url:
         url: "{{ prometheus_exporters_dict[item]['binary_url'] }}"
         dest: '{{ prometheus_exporter_subdir }}'
+        owner: "{{ prometheus_user }}"
+        group: "{{ prometheus_group }}"
       when: ( prometheus_exporters_dict[item]['binary_url'] is defined) and ({{ item }}_stat.stat.exists == False)
       notify: restart {{ item }}
 
@@ -83,20 +84,18 @@
 - name: copy mysqld_exporter config
   template:
     src: "library/templates/my.cnf.j2"
-    dest: "{{ prometheus_exporter_daemon_dir }}/my.cnf" 
+    dest: "{{ prometheus_exporter_daemon_dir }}/my.cnf"
   when: item == 'mysqld_exporter'
 
 - name: copy INIT script to server
   template: src="../templates/exporter.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/{{ item }}"  mode="a+x"
-  when: sys.stdout == "init"
+  when: ansible_service_mgr != "systemd"
 
 - name: copy systemd config to server
   template: src="../templates/exporter.service.j2"  dest="/lib/systemd/system/{{ item }}.service"
-  when: sys.stdout == "systemd"
-
-- name: set INIT status and start
-  service: name='{{ item }}' enabled=yes state=restarted
-
+  when: ansible_service_mgr == "systemd"
+  notify:
+    - restart {{ item }}
 
 - name: enable service {{ item }} and ensure it is not masked
   systemd:
@@ -104,4 +103,10 @@
     daemon_reload: yes
     enabled: yes
     masked: no
-  when: sys.stdout == "systemd"
+  when: ansible_service_mgr == "systemd"
+
+- name: enable non-systemd service {{ item }} and ensure it is not masked
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  when: ansible_service_mgr != "systemd"

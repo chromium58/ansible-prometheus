@@ -48,58 +48,6 @@
   when: prometheus_alertmanager_version != "git"
 
 
-- block:
-
-    - name: set internal variables for convenience
-      set_fact:
-        prometheus_alertmanager_git_url: "https://github.com/prometheus/alertmanager.git"
-        prometheus_alertmanager_src_path: "{{ prometheus_goroot }}/src/github.com/prometheus/alertmanager"
-        prometheus_alertmanager_daemon_dir: "{{ prometheus_install_path }}"
-
-    - name: install gcc for compiling go-sqlite3
-      action: "{{ ansible_pkg_mgr }} name=gcc state=present"
-
-    - name: install static libs for compiling source
-      yum: name=glibc-static state=present
-      when: ansible_pkg_mgr == "yum"
-
-    - name: delete the alertmanager build directory, if necessary
-      file: path="{{ prometheus_alertmanager_src_path }}" state=absent
-      when: prometheus_rebuild
-
-    - name: clone the alertmanager project src
-      git:
-        repo: "{{ prometheus_alertmanager_git_url }}"
-        dest: "{{ prometheus_alertmanager_src_path }}"
-        force: yes
-
-    - name: build alertmanager source code
-      command: make format build
-      #command: make
-      args:
-        chdir: "{{ prometheus_alertmanager_src_path }}"
-        creates: alertmanager
-      environment:
-        GO15VENDOREXPERIMENT: 1
-        GOROOT: "{{ prometheus_goroot }}"
-        GOPATH: "{{ prometheus_gopath }}"
-        PATH: "{{ ansible_env.PATH }}:{{ prometheus_goroot }}/bin:{{ prometheus_gopath }}/bin"
-
-    - name: copy the built alertmanager to the install path
-      command: "cp {{ prometheus_alertmanager_src_path }}/alertmanager {{ prometheus_install_path }}"
-      args:
-        creates: "{{ prometheus_install_path }}/alertmanager"
-
-    - name: set permissions, owner and group
-      file:
-        path: "{{ prometheus_install_path }}/alertmanager"
-        owner: "{{ prometheus_user }}"
-        group: "{{ prometheus_group }}"
-        mode: "go-w"
-
-  when: prometheus_alertmanager_version == "git"
-
-
 - name: mkdir for alertmanager data (silences.json for now)
   file:
     path: "{{ item }}"
@@ -115,9 +63,6 @@
 
 - name: copy INIT script to server
   template: src="../templates/alertmanager.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/alertmanager"  mode="a+x"
-
-- name: set INIT status
-  service: name=alertmanager enabled=yes
 
 #- name: set INIT status and start
 #  service: name=alertmanager state=started

@@ -8,7 +8,7 @@
 
 - name: Allow certain ips for scraping prometheus metrics
   iptables_raw:
-    name: allow_eastwood_prometheus
+    name: allow_iptables_prometheus
     rules: '-A INPUT -p tcp -m tcp -s {% for ip in prometheus_allowed_ips %}{{ ip }}{% if not loop.last %},{% endif %}{% endfor %} --dport 9090:9299 -j ACCEPT'
     weight: 35
 
