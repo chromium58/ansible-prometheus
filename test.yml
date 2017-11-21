@@ -12,7 +12,8 @@
     #prometheus_components: [ "prometheus" ]
     #prometheus_components: [ "node_exporter" ]
     #prometheus_components: [ "alertmanager" ]
-    prometheus_components: [ "prometheus", "node_exporter", "alertmanager" ]
+    prometheus_components: [ "prometheus", "alertmanager" ]
+    prometheus_exporters: ["node_exporter"]
     #prometheus_alertmanager_version: git
 
 
