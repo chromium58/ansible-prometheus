@@ -2,8 +2,6 @@
 williamyeh.prometheus for Ansible Galaxy
 ============
 
-[![Circle CI](https://circleci.com/gh/William-Yeh/ansible-prometheus.svg?style=shield)](https://circleci.com/gh/William-Yeh/ansible-prometheus) [![Build Status](https://travis-ci.org/William-Yeh/ansible-prometheus.svg?branch=master)](https://travis-ci.org/William-Yeh/ansible-prometheus)
-
 
 
 ## Summary
@@ -12,16 +10,10 @@ Role name in Ansible Galaxy: **[williamyeh.prometheus](https://galaxy.ansible.co
 
 This Ansible role has the following features for [Prometheus](http://prometheus.io/):
 
- - Install specific versions of [Prometheus server](https://github.com/prometheus/prometheus), [Node exporter](https://github.com/prometheus/node_exporter), [Alertmanager](https://github.com/prometheus/alertmanager).
+ - Install specific versions of [Prometheus server](https://github.com/prometheus/prometheus), [Node exporter](https://github.com/prometheus/node_exporter), [Alertmanager](https://github.com/prometheus/alertmanager), [Redis exporter](https://github.com/oliver006/redis_exporter), [Postgres exporter](https://github.com/oliver006/https://github.com/wrouesnel/postgres_exporter), [Mysqld exporter](https://github.com/prometheus/mysqld_exporter). Or simply add your own exporter in dictionary and this role will install it for you.
  - Handlers for restart/reload/stop events;
  - Bare bone configuration (*real* configuration should be left to user's template files; see **Usage** section below).
 
-
-To keep this role simple, this role only installs 3 components: Prometheus server, Node exporter, and Alertmanager. Use the following roles if you want to install other Prometheus exporters:
-
-- Consul: **[William-Yeh.consul_exporter](https://galaxy.ansible.com/William-Yeh/consul_exporter/)**
-- Elasticsearch: **[William-Yeh.es_cluster_exporter](https://galaxy.ansible.com/William-Yeh/es_cluster_exporter/)**
-- MongoDB: **[williamyeh.mongodb_exporter](https://galaxy.ansible.com/williamyeh/mongodb_exporter/)**
 
 
 
@@ -30,7 +22,7 @@ To keep this role simple, this role only installs 3 components: Prometheus serve
 
 ### Mandatory variables
 
-The components to be installed:
+The components to be installed(i'm setting it in inventory):
 
 ```yaml
 # Supported components:
@@ -42,7 +34,13 @@ The components to be installed:
 #   [Exporter components]
 #     - "node_exporter"
 #
-prometheus_components
+prometheus_components:
+  - prometheus
+  - blackbox_exporter
+  - alertmanager
+prometheus_exporters:
+  - node_exporter
+  - postgres_exporter
 ```
 
 
@@ -81,15 +79,10 @@ gosu_version:  "1.10"
 ```
 
 
-### Optional variables: systemd or not
+### About systemd
 
 
-If the Linux distributions are equipped with systemd, this role will use this mechanism accordingly. You can disable this (i.e., use traditional SysV-style init script) by defining the following variable(s) to `false`:
-
-```yaml
-# currently, only node_exporter is supported.
-prometheus_node_exporter_use_systemd
-```
+If the Linux distributions are equipped with systemd, this role will use this mechanism accordingly.
 
 
 
@@ -98,9 +91,6 @@ prometheus_node_exporter_use_systemd
 User-configurable defaults:
 
 ```yaml
-# which version?
-prometheus_version:  1.5.0
-
 
 
 # directory for rule files
@@ -112,8 +102,6 @@ prometheus_file_sd_config_path:  {{ prometheus_config_path }}/tgroups
 # directory for runtime database
 prometheus_db_path:   /var/lib/prometheus
 ```
-
-
 
 
 
@@ -225,57 +213,78 @@ prometheus_blackbox_opts
 ```
 
 
-### Optional: building from source tree
+### "Whitebox" exporters dictionary
+Exporters versions and dictionary
 
-(Credit: [Robbie Trencheny](https://github.com/robbiet480))
+Exporter options:
 
-For aforementioned `prometheus_components`, you can optionally download/compile from the *master* branch of [Prometheus repositories](https://github.com/prometheus) by setting the respective version to `git`.
+  version - expoter version to install(Mandatory option)
 
-It will install a temporary Golang compiler in the `prometheus_workdir` directory (defined in `defaults/main.yml`).
+  url - install url(Mandatory option)
 
-For example, get the latest code for all components by assigning all `*_version` variables to `git`:
+  binary_path - define it in case if exporter binary is unarchived in non-standart path(optional)
 
+  subdir  - if binary is not inside subdirectory(optional)
+
+  options - command line arguments(optional)
+
+  datasource - option that is used in postgres_exporter, will define environment variable DATASOURCE, that contains connection string to database(optional)
+
+  conf - if exporter have it is own config will install it from
+   templates/{{exporter_name}}.yml(optional)
+
+  sudo - if set to yes, exporter will run with root privileges(optional)
 ```yaml
-prometheus_version: git
-prometheus_node_exporter_version: git
-prometheus_alertmanager_version: git
+node_exporter_version: '0.15.0'
+redis_exporter_version: '0.13'
+postgres_exporter_version: '0.3.0'
+mysqld_exporter_version: '0.10.0'
+nginx_vts_exporter_version: '0.5'
+hpraid_exporter_version: '0.0.3'
+
+prometheus_exporters_dict:
+  node_exporter:
+    version: '{{node_exporter_version}}'
+    url: 'https://github.com/prometheus/node_exporter/releases/download/v{{node_exporter_version}}/node_exporter-{{node_exporter_version}}.linux-amd64.tar.gz'
+
+  redis_exporter:
+    version: '{{redis_exporter_version}}'
+    url: 'https://github.com/oliver006/redis_exporter/releases/download/v{{redis_exporter_version}}/redis_exporter-v{{redis_exporter_version}}.linux-amd64.tar.gz'
+    binary_path: "{{ prometheus_install_path }}/redis_exporter-{{redis_exporter_version}}.{{ prometheus_platform_suffix }}/redis_exporter"
+    subdir: no
+    options: "-redis.alias={{ inventory_hostname }}"
+
+  postgres_exporter:
+    version: '{{postgres_exporter_version}}'
+    binary_url: 'https://github.com/wrouesnel/postgres_exporter/releases/download/v{{postgres_exporter_version}}/postgres_exporter'
+    datasource: "user=postgres host=/var/run/postgresql/ sslmode=disable"
+
+  mysqld_exporter:
+    version: '{{mysqld_exporter_version}}'
+    url: 'https://github.com/prometheus/mysqld_exporter/releases/download/v{{mysqld_exporter_version}}/mysqld_exporter-{{mysqld_exporter_version}}.linux-amd64.tar.gz'
+    options: '-config.my-cnf={{ prometheus_install_path }}/mysqld_exporter-{{mysqld_exporter_version}}.{{ prometheus_platform_suffix }}/my.cnf'
+
+  nginx_vts_exporter:
+    version: '{{nginx_vts_exporter_version}}'
+    url: 'https://github.com/hnlq715/nginx-vts-exporter/archive/v{{nginx_vts_exporter_version}}.tar.gz'
+    binary_path: "{{ prometheus_install_path }}/nginx_vts_exporter-{{nginx_vts_exporter_version}}.{{ prometheus_platform_suffix }}/nginx-vts-exporter-{{nginx_vts_exporter_version}}/bin/nginx-vts-exporter"
+    options: "-nginx.scrape_uri=http://example.com/format/json"
+    subdir: no
+
+  hpraid_exporter:
+    version: '{{hpraid_exporter_version}}'
+    url: 'https://github.com/chromium58/hpraid_exporter/releases/download/v{{hpraid_exporter_version}}/hpraid_exporter-{{hpraid_exporter_version}}.linux-amd64.tar.gz'
+    options: '-cmd=/sbin/hpssacli'
+    sudo: "yes"
+
+  process_exporter:
+    version: '{{process_exporter_version}}'
+    url: 'https://github.com/ncabatoff/process-exporter/releases/download/v{{process_exporter_version}}/process-exporter-{{process_exporter_version}}.linux-amd64.tar.gz'
+    binary_path: "{{ prometheus_install_path }}/process-exporter-{{process_exporter_version}}.{{ prometheus_platform_suffix }}/process-exporter"
+    conf: yes
+    options: "-config.path /etc/prometheus/process_exporter.yml"
+    sudo: "yes"
 ```
-
-If you'd like to force rebuild each time, enable the following variable (default is `false`):
-
-```yaml
-prometheus_rebuild: true
-```
-
-
-
-## Handlers
-
-Prometheus server:
-
-- `restart prometheus`
-
-- `reload prometheus`
-
-- `stop prometheus`
-
-
-Node exporter:
-
-- `restart node_exporter`
-
-- `reload node_exporter` (actually, the same as `restart`)
-
-- `stop node_exporter`
-
-
-Alertmanager:
-
-- `restart alertmanager`
-
-- `reload alertmanager`
-
-- `stop alertmanager`
 
 
 
