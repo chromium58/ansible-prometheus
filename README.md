@@ -6,7 +6,7 @@ williamyeh.prometheus for Ansible Galaxy
 
 ## Summary
 
-Role name in Ansible Galaxy: **[williamyeh.prometheus](https://galaxy.ansible.com/williamyeh/prometheus/)**
+Role name in Ansible Galaxy: **[chromium58.prometheus](https://galaxy.ansible.com/chromium58/prometheus/)**
 
 This Ansible role has the following features for [Prometheus](http://prometheus.io/):
 
@@ -293,7 +293,7 @@ prometheus_exporters_dict:
 
 ### Step 1: add role
 
-Add role name `williamyeh.prometheus` to your playbook file.
+Add role name `chromium58.prometheus` to your playbook file.
 
 
 ### Step 2: add variables
@@ -309,7 +309,7 @@ Simple example:
 - hosts: all
   become: True
   roles:
-    - williamyeh.prometheus
+    - chromium58.prometheus
 
   vars:
     prometheus_components: [ "prometheus", "alertmanager" ]
@@ -330,7 +330,7 @@ More practical example:
 - hosts: all
   become: True
   roles:
-    - williamyeh.prometheus
+    - chromium58.prometheus
 
   vars:
     prometheus_components:
