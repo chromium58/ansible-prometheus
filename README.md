@@ -1,8 +1,14 @@
 
-williamyeh.prometheus for Ansible Galaxy
+chromium58.prometheus for Ansible Galaxy
 ============
+Original role - https://github.com/William-Yeh/ansible-prometheus
 
+This role is a fork of William-Yeh role.
 
+## WHY FORK
+
+I did this fork, because original role does not have simple way to add and install new prometheus exporters without copy-pasting a lot of similar ansible(yaml) code. I found a way to do it by implementing exporters dictionary and templating exporters installation with some jinja magic.
+Also i removed possibility to install exporters from sources, because i think that keeping compilers on a servers that needs to be monitored is a bad idea.
 
 ## Summary
 
@@ -79,7 +85,7 @@ gosu_version:  "1.10"
 ```
 
 
-### About systemd
+### Systemd support
 
 
 If the Linux distributions are equipped with systemd, this role will use this mechanism accordingly.
@@ -218,7 +224,7 @@ Exporters versions and dictionary
 
 Exporter options:
 
-  version - expoter version to install(Mandatory option)
+  version - exporter version to install(Mandatory option)
 
   url - install url(Mandatory option)
 
@@ -230,10 +236,11 @@ Exporter options:
 
   datasource - option that is used in postgres_exporter, will define environment variable DATASOURCE, that contains connection string to database(optional)
 
-  conf - if exporter have it is own config will install it from
-   templates/{{exporter_name}}.yml(optional)
+  conf - if exporter have it is own config will install it from templates/{{exporter_name}}.yml(optional)
 
   sudo - if set to yes, exporter will run with root privileges(optional)
+
+
 ```yaml
 node_exporter_version: '0.15.0'
 redis_exporter_version: '0.13'
@@ -335,8 +342,9 @@ More practical example:
   vars:
     prometheus_components:
       - prometheus
-      - node_exporter
       - alertmanager
+    prometheus_exporters:
+      - node_exporter
 
     prometheus_rule_files:
       this_is_rule_1_InstanceDown:
@@ -356,15 +364,19 @@ Open the page in your browser:
 - Alertmanager - `http://HOST:9093`
 
 
+####You can find example how to build playbook with this role as core component at url:
+
+https://github.com/chromium58/prometheus-ansible-playbook
+
 ## Dependencies
 
 None.
 
 
 ## Contributors
-
-- [William Yeh](https://github.com/William-Yeh)
-- [Robbie Trencheny](https://github.com/robbiet480) - contribute an early version of building binaries from Go source code.
+- [Ivan Lukianov](https://github.com/chromium58) - author of this fork
+- [William Yeh](https://github.com/William-Yeh) - role author
+- [Robbie Trencheny](https://github.com/robbiet480) - contribute an early version of building binaries from Go source code. (I removed this part. Sorry)
 - [Travis Truman](https://github.com/trumant) - contribute an early version of consul_exporter installer; now moved to [William-Yeh.consul_exporter](https://github.com/William-Yeh/ansible-consul-exporter).
 - [Musee Ullah](https://github.com/lae)
 
