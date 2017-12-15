@@ -72,10 +72,14 @@
 - name: copy INIT script to server
   template: src="../templates/blackbox_exporter.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/blackbox_exporter"  mode="a+x"
   when: ansible_service_mgr != "systemd"
+  notify:
+    - restart blackbox_exporter
 
 - name: copy systemd config to server
   template: src="../templates/blackbox_exporter.service.j2"  dest="/lib/systemd/system/blackbox_exporter.service"
   when: ansible_service_mgr == "systemd"
+  notify:
+    - restart blackbox_exporter
 
 - name: install blackbox config file from playbook's, if any
   template: src="{{ playbook_dir }}/{{ prometheus_blackbox_conf }}"  dest="{{ prometheus_config_path }}/blackbox.yml"
